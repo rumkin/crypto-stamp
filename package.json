@@ -1,0 +1,32 @@
+{
+  "name": "crypto-stamp",
+  "version": "0.1.0",
+  "description": "Cryptography stamp algorythm",
+  "main": "src/crypto-stamp.js",
+  "scripts": {
+    "cov": "istanbul cover node_modules/mocha/bin/_mocha -- -u exports -R spec test/**.spec.js",
+    "test": "mocha test/**.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rumkin/crypto-stamp.git"
+  },
+  "keywords": [
+    "cryptography",
+    "crypto",
+    "authorization"
+  ],
+  "author": "rumkin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rumkin/crypto-stamp/issues"
+  },
+  "homepage": "https://github.com/rumkin/crypto-stamp#readme",
+  "dependencies": {
+    "ed25519-supercop": "^1.0.2"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.3",
+    "mocha": "^2.4.5"
+  }
+}

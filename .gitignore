@@ -1,0 +1,5 @@
+**/.DS_Store
+tmp
+local
+node_modules
+coverage
