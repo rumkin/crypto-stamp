@@ -9,7 +9,7 @@ describe('CryptoStamp.generate', () => {
         var stamp = cryptoStamp.generate({
             action: 'auth',
             signer: 'user@host',
-            date: new Date('0000-00-00T00:00:00.000+00:00'),
+            date: new Date('1970-01-01T00:00:00.000+00:00'),
             holders: ['host1'],
         }, key.publicKey, key.secretKey);
 

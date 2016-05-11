@@ -7,6 +7,14 @@ exports.generate = generate;
 exports.verify = verify;
 exports.createKey = createKey;
 
+/**
+ * Generate crytostamp object from data and key.
+ *
+ * @param  {cryptoStampData} options Cryptostamp data.
+ * @param  {string|Buffer} pub   User public key.
+ * @param  {string|Buffer} secret   User secret key.
+ * @return {cryptoStamp} Cryptostamp instance object.
+ */
 function generate({action, params, date = new Date, signer, holders}, pub, secret) {
     // Create hash data
     var hash = getHash({
@@ -25,16 +33,30 @@ function generate({action, params, date = new Date, signer, holders}, pub, secre
         hash: hash.toString('hex'),
     }), pub, secret);
 
-    return {
+    var stamp = {
         action,
         date,
-        signer,
-        holders,
         signature: signature.toString('hex'),
         hash: hash.toString('hex'),
     };
+
+    if (signer) {
+        stamp.signer = signer;
+    }
+
+    if (holders) {
+        stamp.holders = holders;
+    }
+
+    return stamp;
 }
 
+/**
+ * Verify Cryptostamp instance.
+ * @param  {object} stamp Cryptostamp
+ * @param  {string|Buffer} pub   Stamp public key.
+ * @return {bool} Returns true if value is verified.
+ */
 function verify(stamp, pub) {
     return ed25519.verify(stamp.signature,
     getHash({
@@ -46,10 +68,21 @@ function verify(stamp, pub) {
     }), pub);
 }
 
+/**
+ * Get hash from json stringified normalized value.
+ *
+ * @param  {*} data Any type of data.
+ * @return {Buffer}      Sha256 hash buffer.
+ */
 function getHash(data) {
     return sha256(JSON.stringify(normalize(data)));
 }
 
+/**
+ * Convert value to sha256 hash
+ * @param  {string} value Value to generate hash.
+ * @return {buffer}       Hash generation result.
+ */
 function sha256(value) {
     var hash = crypto.createHash('sha256');
 
@@ -58,6 +91,11 @@ function sha256(value) {
     return hash.digest();
 }
 
+/**
+ * Normalize value. If it is an object sort it keys.
+ * @param  {*} target Value to normalize.
+ * @return {*}        Normalized value. In most cases returns the value itself.
+ */
 function normalize(target) {
     if (target && typeof target === 'object' && ! Array.isArray(target)) {
         return Object.keys(target).sort().reduce((result, key) => {
