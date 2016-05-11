@@ -22,7 +22,7 @@ var key = cryptoStamp.createKey('user', '1234567890');
 var stamp = cryptoStamp.generate({
     action: 'auth',
     signer: 'user@host',
-    date: new Date('0000-00-00T00:00:00.000+00:00'),
+    date: new Date('1970-01-01T00:00:00.000+00:00'),
     holders: ['host1'],
 }, key.publicKey, key.secretKey);
 
@@ -43,7 +43,7 @@ for custom method.
 	// Stamp data (optional)
 	"params": {},
 	// Date of creation
-	"date": "0000-00-00T00:00:00.000+00:00",
+	"date": "1970-01-01T00:00:00.000+00:00",
 	// Stamp owner
 	"signer": "user@host0",
 	// Stamp holders
@@ -64,8 +64,8 @@ for custom method.
 | action      | String   | Action name. For example "auth" or "accept"                                                                                  |
 | params      | *        | **Optional**. Action params. Could be any type. Differs for each action. Could be deleted from signature for security reason |
 | date        | String   | Date string in ISO 8601                                                                                                      |
-| signer      | String   | Signer URI (username and host): "user@localhost"                                                                             |
-| holders     | String[] | Holders is an array of signature receivers URIs                                                                              |
+| signer      | String   | **Optional**. Signer URI (username and host): "user@localhost"                                                               |
+| holders     | String[] | **Optional**. Holders is an array of signature receivers URIs                                                                |
 | description | String   | **Optional**. Textual representation of signature content                                                                    |
 | hash        | String   | Sha256 hash from params                                                                                                      |
 | signature   | String   | ed25519 signature of hash from stamp data as hex string                                                                      |
