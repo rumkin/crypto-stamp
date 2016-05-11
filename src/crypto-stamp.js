@@ -8,6 +8,15 @@ exports.verify = verify;
 exports.createKey = createKey;
 
 /**
+ * @type cryptoStampData
+ * @prop {string} action Action name
+ * @prop {*} [params] Params data
+ * @prop {Date} [date] Date
+ * @prop {string} [signer] Signer URI
+ * @prop {string[]} [holders] Holders URIs
+ */
+
+/**
  * Generate crytostamp object from data and key.
  *
  * @param  {cryptoStampData} options Cryptostamp data.
@@ -15,7 +24,7 @@ exports.createKey = createKey;
  * @param  {string|Buffer} secret   User secret key.
  * @return {cryptoStamp} Cryptostamp instance object.
  */
-function generate({action, params, date = new Date, signer, holders}, pub, secret) {
+function generate({action, params, date, signer, holders}, pub, secret) {
     // Create hash data
     var hash = getHash({
         action,
