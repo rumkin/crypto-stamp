@@ -2,9 +2,12 @@
 
 const crypto = require('crypto');
 const ed25519 = require('ed25519-supercop');
+const normjson = require('normjson');
 
-exports.generate = generate;
-exports.verify = verify;
+exports.createStamp = createStamp;
+exports.createToken = createToken;
+exports.parseToken = parseToken;
+exports.verifyStamp = verifyStamp;
 exports.createKey = createKey;
 
 /**
@@ -24,33 +27,30 @@ exports.createKey = createKey;
  * @param  {string|Buffer} secret   User secret key.
  * @return {cryptoStamp} Cryptostamp instance object.
  */
-function generate({action, params, date, signer, holders}, pub, secret) {
+function createStamp({action, params = {}, date, owner, holders}, pub, secret) {
     // Create hash data
-    var hash = getHash({
-        action,
-        params,
-        date,
-        signer,
-        holders
-    });
-
-    var signature = ed25519.sign(getHash({
+    var hash = getHash(params);
+    var stampHash = getHash({
         action,
         date,
-        signer,
+        owner,
         holders,
         hash: hash.toString('hex'),
-    }), pub, secret);
+    });
+    var signature = ed25519.sign(stampHash, pub, secret);
 
     var stamp = {
         action,
         date,
+        alg: 'eddsa',
         signature: signature.toString('hex'),
         hash: hash.toString('hex'),
+        stampHash: stampHash.toString('hex'),
+        params,
     };
 
-    if (signer) {
-        stamp.signer = signer;
+    if (owner) {
+        stamp.owner = owner;
     }
 
     if (holders) {
@@ -66,12 +66,24 @@ function generate({action, params, date, signer, holders}, pub, secret) {
  * @param  {string|Buffer} pub   Stamp public key.
  * @return {bool} Returns true if value is verified.
  */
-function verify(stamp, pub) {
+function verifyStamp(stamp, pub) {
+    if (stamp.alg !== 'eddsa') {
+        return false;
+    }
+    
+    let hash;
+    if ('params' in stamp) {
+        hash = getHash(stamp.params);
+        if (hash.toString('hex') !== stamp.hash) {
+            return false;
+        }
+    }
+    
     return ed25519.verify(stamp.signature,
     getHash({
         action: stamp.action,
         date: stamp.date,
-        signer: stamp.signer,
+        owner: stamp.owner,
         holders: stamp.holders,
         hash: stamp.hash,
     }), pub);
@@ -84,7 +96,7 @@ function verify(stamp, pub) {
  * @return {Buffer}      Sha256 hash buffer.
  */
 function getHash(data) {
-    return sha256(JSON.stringify(normalize(data)));
+    return sha256(normjson(data));
 }
 
 /**
@@ -123,6 +135,7 @@ function normalize(target) {
  * @param  {string} password Password
  * @return {ed25519.keyPair} Keypair
  */
+// FIXME Enforce password generation or remove as unnecessary
 function createKey(username, password) {
     return ed25519.createKeyPair(
         sha256(
@@ -130,3 +143,91 @@ function createKey(username, password) {
         )
     );
 }
+
+function createToken(stamp, publicKey, secretKey) {
+    return toBase64(normjson({
+        type: 'cryptostamp',
+        ver: 0.3,
+    })) + '.' + toBase64(normjson(createStamp(stamp, publicKey, secretKey)))
+}
+
+function parseToken(token) {
+    let [head, stamp] = token.split('.').map(fromBase64).map((i) => JSON.parse(i));
+    
+    if (head.type !== 'cryptostamp') {
+        throw new Error('Not a cryptostamp token');
+    }
+    
+    return stamp;
+}
+
+function toBase64(str) {
+  return Buffer.from(str)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+function fromBase64(str) {
+  return Buffer.from(str
+    .replace(/-/g, '+')
+    .replace(/_/g, '/'),
+    'base64').toString();
+}
+
+class Stamper {
+    constructor(options = {}) {
+        if (options.owner) {
+            this.owner = options.owner;
+        }
+        
+        if (options.key) {
+            this.setKeys(options.key);
+        }
+    }
+    
+    setKeys(key, secret) {
+        if (typeof key === 'object' && 'publicKey' in key) {
+            this.publicKey = key.publicKey;
+            this.secretKey = key.secretKey;
+        }
+        else {
+            this.publicKey = key;
+            this.secretKey = secret;
+        }
+    }
+    
+    setOwner(owner) {
+        this.onwer = owner;
+    }
+    
+    stamp({action, params = {}, date = new Date(), owner = this.owner, holders}) {
+        if (! this.publicKey) {
+            throw new Error('Keys not set');
+        }
+        
+        let stamp = createStamp({action, params, date, owner, holders}, this.publicKey, this.secretKey);
+        
+        if (! this.debug) {
+            delete stamp.stampHash;
+        }
+        
+        return stamp;
+    }
+    
+    verify(stamp) {
+        if (typeof stamp === 'string') {
+            stamp = parseToken(stamp);
+        }
+        
+        return verifyStamp(stamp, this.publicKey);
+    }
+    
+    token(data) {
+        return toBase64(normjson({type: 'cryptostamp', ver: 0.3})) + '.'
+        + toBase64(normjson(this.stamp(data)));
+    }
+}
+
+exports.Stamper = Stamper;

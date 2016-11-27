@@ -6,13 +6,77 @@ describe('CryptoStamp.generate', () => {
     it('Should generate and verify stamp', () => {
         var key = cryptoStamp.createKey('user', '1234567890');
 
-        var stamp = cryptoStamp.generate({
+        var stamp = cryptoStamp.createStamp({
             action: 'auth',
-            signer: 'user@host',
+            owner: 'user@host',
             date: new Date('1970-01-01T00:00:00.000+00:00'),
             holders: ['host1'],
         }, key.publicKey, key.secretKey);
 
-        assert.ok(cryptoStamp.verify(stamp, key.publicKey), 'Signature verified');
+        assert.ok(cryptoStamp.verifyStamp(stamp, key.publicKey), 'Signature verified');
+    });
+    
+    it('Should verify token', () => {
+        var key = cryptoStamp.createKey('user', '1234567890');
+
+        var stamp = cryptoStamp.createToken({
+            action: 'auth',
+            owner: 'user@host',
+            date: new Date('1970-01-01T00:00:00.000+00:00'),
+            holders: ['host1'],
+        }, key.publicKey, key.secretKey);
+
+        assert.ok(cryptoStamp.verifyStamp(cryptoStamp.parseToken(stamp), key.publicKey), 'Signature verified');
+    });
+    
+    describe('Stamp instance', () => {
+        it('Should verify stamp', () => {
+            let stamper = new cryptoStamp.Stamper({
+                owner: 'user@host',
+                key: cryptoStamp.createKey('user', '*********'),
+            });
+            
+            let stamp = stamper.stamp({
+               action: 'auth',
+               params: {},
+               holders: ['host1'],
+            });
+            
+            assert.ok(stamper.verify(stamp), 'Signature is valid'); 
+        });
+        
+        it('Should not verify changed stamp', () => {
+            let stamper = new cryptoStamp.Stamper({
+                owner: 'user@host',
+                key: cryptoStamp.createKey('user', '*********'),
+            });
+            
+            let stamp = stamper.stamp({
+               action: 'auth',
+               params: {
+                   count: 1,
+               },
+               holders: ['host1'],
+            });
+            
+            stamp.params.count = 2;
+            
+            assert.ok(! stamper.verify(stamp), 'Signature is valid'); 
+        });
+        
+        it('Should verify token', () => {
+            let stamper = new cryptoStamp.Stamper({
+                owner: 'user@host',
+                key: cryptoStamp.createKey('user', '*********'),
+            });
+            
+            let stamp = stamper.token({
+               action: 'auth',
+               params: {},
+               holders: ['host1'],
+            });
+            
+            assert.ok(stamper.verify(stamp), 'Signature is valid'); 
+        });
     });
 });
