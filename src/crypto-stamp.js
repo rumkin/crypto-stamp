@@ -113,22 +113,6 @@ function sha256(value) {
 }
 
 /**
- * Normalize value. If it is an object sort it keys.
- * @param  {*} target Value to normalize.
- * @return {*}        Normalized value. In most cases returns the value itself.
- */
-function normalize(target) {
-    if (target && typeof target === 'object' && ! Array.isArray(target)) {
-        return Object.keys(target).sort().reduce((result, key) => {
-            result[key] = normalize(target[key]);
-            return result;
-        }, {});
-    } else {
-        return target;
-    }
-}
-
-/**
  * Create ed25519 key from username and password
  *
  * @param  {string} username Username
@@ -144,13 +128,33 @@ function createKey(username, password) {
     );
 }
 
-function createToken(stamp, publicKey, secretKey) {
-    return toBase64(normjson({
-        type: 'cryptostamp',
-        ver: 0.3,
-    })) + '.' + toBase64(normjson(createStamp(stamp, publicKey, secretKey)))
+/**
+ * Parse base64 envelope.
+ * 
+ * @param {object} head Base64 envelope head
+ * @param {object} body Base64 envelope body
+ * @param {Buffer|string} Public key
+ * @param {Buffer|string} Secret key
+ * @return {string} Base64 envelope
+ */
+function createToken(head, data, publicKey, secretKey) {
+    if (arguments.length < 4) {
+        secretKey = publicKey;
+        publicKey = data;
+        data = head;
+        head = {type: 'cryptostamp', ver: 0.3};
+    }
+        
+    return toBase64(normjson(head)) + '.'
+        + toBase64(normjson(createStamp(data, publicKey, secretKey)))
 }
 
+/**
+ * Parse base64 envelope.
+ * 
+ * @param {string} token Base64 envelope
+ * @return {CryptoStamp} Crypto stamp instance
+ */
 function parseToken(token) {
     let [head, stamp] = token.split('.').map(fromBase64).map((i) => JSON.parse(i));
     
@@ -161,6 +165,12 @@ function parseToken(token) {
     return stamp;
 }
 
+/**
+ * Convert string encoded as utf8 into base64 url.
+ * 
+ * @param {string} str String in utf8
+ * @return {string} String in base64 url
+ */
 function toBase64(str) {
   return Buffer.from(str)
     .toString('base64')
@@ -169,6 +179,12 @@ function toBase64(str) {
     .replace(/=/g, '');
 }
 
+/**
+ * Convert string encoded as base64 url into utf8 string.
+ * 
+ * @param {string} str String in base64 url
+ * @return {string} String in utf8
+ */
 function fromBase64(str) {
   return Buffer.from(str
     .replace(/-/g, '+')
@@ -177,9 +193,13 @@ function fromBase64(str) {
 }
 
 class Stamper {
+    /**
+     * @constructor
+     * @param {{owner, key}} options Crypto stamper options object. Contains default values
+     */
     constructor(options = {}) {
         if (options.owner) {
-            this.owner = options.owner;
+            this.setOwner(options.owner);
         }
         
         if (options.key) {
@@ -187,6 +207,13 @@ class Stamper {
         }
     }
     
+    /**
+     * Set public and private keys
+     * 
+     * @param {Buffer|string|{publicKey,secretKey} Public key buffer or keypair object.
+     * @param {Buffer|string} Secret key
+     * @return {this}
+     */
     setKeys(key, secret) {
         if (typeof key === 'object' && 'publicKey' in key) {
             this.publicKey = key.publicKey;
@@ -196,12 +223,27 @@ class Stamper {
             this.publicKey = key;
             this.secretKey = secret;
         }
+        
+        return this;
     }
     
+    /**
+     * Set default owner
+     * 
+     * @param {string} owner Owner name
+     * @return {this}
+     */
     setOwner(owner) {
         this.onwer = owner;
+        return this;
     }
     
+    /**
+     * Create crypto stamp object
+     * 
+     * @param {object} {} Object with properties: action, params, date, owner, holder
+     * @returns {object} CryptoStamp object.
+     */
     stamp({action, params = {}, date = new Date(), owner = this.owner, holders}) {
         if (! this.publicKey) {
             throw new Error('Keys not set');
@@ -216,6 +258,12 @@ class Stamper {
         return stamp;
     }
     
+    /**
+     * Verify cryptostamp object or token.
+     * 
+     * @param {object|string} stamp Verify base64 envlope token or stamp object.
+     * @returns {boolean} Return true if signature is valid.
+     */
     verify(stamp) {
         if (typeof stamp === 'string') {
             stamp = parseToken(stamp);
@@ -224,8 +272,20 @@ class Stamper {
         return verifyStamp(stamp, this.publicKey);
     }
     
-    token(data) {
-        return toBase64(normjson({type: 'cryptostamp', ver: 0.3})) + '.'
+    /**
+     * Parse base64 envelope.
+     * 
+     * @param {object} head Base64 envelope head
+     * @param {object} body Base64 envelope body
+     * @return {string} Base64 envelope
+     */
+    token(head, data) {
+        if (arguments.length < 2) {
+            data = head;
+            head = {type: 'cryptostamp', ver: 0.3};
+        }
+        
+        return toBase64(normjson(head)) + '.'
         + toBase64(normjson(this.stamp(data)));
     }
 }

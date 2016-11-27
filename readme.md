@@ -1,4 +1,4 @@
-# Crypto Stamp
+# Crypto Stamps
 
 Library for generating and verifying cryptography stamps based on ed25519
 elliptic curves and sha256 hashes.
