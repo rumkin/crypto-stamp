@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const ed25519 = require('ed25519-supercop');
 const normjson = require('normjson');
+const FORCE_FACTOR = 1024;
 
 exports.createStamp = createStamp;
 exports.createToken = createToken;
@@ -119,11 +120,10 @@ function sha256(value) {
  * @param  {string} password Password
  * @return {ed25519.keyPair} Keypair
  */
-// FIXME Enforce password generation or remove as unnecessary
-function createKey(username, password) {
+function createKey(username, password, forceFactor = FORCE_FACTOR) {
     return ed25519.createKeyPair(
-        sha256(
-            `${username}|${password}|${username.length + password.length}`
+        multiply(
+            sha256(`${username}:${password}`), forceFactor
         )
     );
 }
@@ -190,6 +190,37 @@ function fromBase64(str) {
     .replace(/-/g, '+')
     .replace(/_/g, '/'),
     'base64').toString();
+}
+
+/**
+ * Get buffer and calculate summary hash from each byte in source buffer.
+ * 
+ * @params {Buffer} hash Source hash
+ * @result {Buffer} Calculated desperced hash.
+ */
+function disperce(hash) {
+    let buff = [];
+
+    for(let i = 0; i < 32; i++) {
+        buff.push(sha256(hash[i].toString(16)));
+    }
+
+    return sha256(Buffer.concat(buff));
+}
+
+/**
+ * Repence dispercion multiple times.
+ * 
+ * @param {Buffer} hash Source buffer to multiply.
+ * @result {Buffer} Disperced buffer.
+ **/ 
+function multiply (hash, n = 1) {
+    let result = hash;
+    for (let i = 0; i < n; i++) {
+        result = disperce(result);
+    }
+    
+    return result;
 }
 
 class Stamper {
