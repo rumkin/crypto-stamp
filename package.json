@@ -1,6 +1,6 @@
 {
   "name": "crypto-stamp",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Cryptography stamp algorythm",
   "main": "src/crypto-stamp.js",
   "scripts": {
