@@ -265,7 +265,7 @@ class Stamper {
      * @return {this}
      */
     setOwner(owner) {
-        this.onwer = owner;
+        this.owner = owner;
         return this;
     }
     
