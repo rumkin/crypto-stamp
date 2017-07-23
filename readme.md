@@ -17,7 +17,7 @@ Example using pure functions:
 
 ```javascript
 const key = cryptoStamp.createKey(
-  cryptoStamp.createPassword('SuperSecretPassword')
+  cryptoStamp.createSecret('SuperSecretPassword')
 );
 
 // Create crypto stamp
