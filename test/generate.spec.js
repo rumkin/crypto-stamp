@@ -87,7 +87,7 @@ describe('CryptoStamp.generate', function () {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678'),
+                  cryptoStamp.createSecret('user:12345678')
                 ),
             });
 
@@ -104,7 +104,7 @@ describe('CryptoStamp.generate', function () {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678'),
+                  cryptoStamp.createSecret('user:12345678')
                 ),
             });
 
@@ -125,7 +125,7 @@ describe('CryptoStamp.generate', function () {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678'),
+                  cryptoStamp.createSecret('user:12345678')
                 ),
             });
 
@@ -145,7 +145,7 @@ describe('CryptoStamp.generate', function () {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678'),
+                  cryptoStamp.createSecret('user:12345678')
                 ),
             });
 
