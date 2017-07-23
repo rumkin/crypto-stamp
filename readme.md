@@ -17,15 +17,15 @@ Example using pure functions:
 
 ```javascript
 const key = cryptoStamp.createKey(
-  cryptoStamp.createSecret('SuperSecretPassword')
+  cryptoStamp.createSecret('...SuperSecretPassword...')
 );
 
 // Create crypto stamp
 const stamp = cryptoStamp.createStamp({
-    type: 'auth',
-    owner: 'user@host',
-    date: new Date('1970-01-01T00:00:00.000+00:00'),
-    holders: ['host1'],
+  type: 'auth',
+  owner: 'user@host',
+  date: new Date('1970-01-01T00:00:00.000+00:00'),
+  holders: ['host1'],
 }, key);
 
 // Verify stamp content and signature
@@ -38,13 +38,15 @@ Example with `Stamper` class:
 const cryptoStamp = require('crypto-stamp');
 
 const stamper = new cryptoStamp.Stamper({
-    owner: 'user@host',
-    key: cryptoStamp.createKey('user', '*********'),
+  owner: 'user@host',
+  key: cryptoStamp.createKey(
+    cryptoStamp.createSecret('...SuperSecretPassword...'),
+  ),
 });
 
 const stamp = stamper.stamp({
-   type: 'auth',
-   holders: ['host1'],
+  type: 'auth',
+  holders: ['host1'],
 });
 
 stamper.verify(stamp);
@@ -58,26 +60,26 @@ for custom method.
 
 ```javascript
 {
-    // Stamp action type
-    "type": "auth",
-    // Stamp data (optional)
-    "payload": {},
-    // Date of creation
-    "date": "1970-01-01T00:00:00.000+00:00",
-    // Stamp owner
-    "owner": "user@host0",
-    // Stamp holders
-    "holders": ["host1", "host2", "user@host3"],
-    // Signature human readable description. Optional
-    "description": "Authentication token",
-    // Sha256 hash from "payload"
-    "hash": "...hash...",
-    // Signature algorithm. Eddsa is currently supported by default
-    "alg": "eddsa",
-    // Signature of Sha256(action, hash, owner, holders and date)
-    "signature": "...signature...",
-    // Checksum (optional, includes in debug) sha256 from type, owner, holders, date and hash
-    "checksum": "...hash...",
+  // Stamp action type
+  "type": "auth",
+  // Stamp data (optional)
+  "payload": {},
+  // Date of creation
+  "date": "1970-01-01T00:00:00.000+00:00",
+  // Stamp owner
+  "owner": "user@host0",
+  // Stamp holders
+  "holders": ["host1", "host2", "user@host3"],
+  // Signature human readable description. Optional
+  "description": "Authentication token",
+  // Sha256 hash from "payload"
+  "hash": "...hash...",
+  // Signature algorithm. Eddsa is currently supported by default
+  "alg": "eddsa",
+  // Signature of Sha256(action, hash, owner, holders and date)
+  "signature": "...signature...",
+  // Checksum (optional, includes in debug) sha256 from type, owner, holders, date and hash
+  "checksum": "...hash...",
 }
 ```
 
@@ -94,6 +96,7 @@ for custom method.
 | hash        | String   | Sha256 hash from payload                                                                                                      |
 | signature   | String   | ed25519 signature of hash from stamp data
 | alg         | String   | Signature algorithm. `eddsa` by default.                                                                                   |
+| publicKey   | String   | Public key for signature verification.                                                                                   |
 
 ### Hash
 
