@@ -1,4 +1,7 @@
-const ed = require('ed25519-supercop');
+'use strict';
+
+const elliptic = require('elliptic');
+const ec = new elliptic.eddsa('ed25519');
 
 exports.verifySignature = verifySignature;
 exports.createSignature = createSignature;
@@ -6,11 +9,11 @@ exports.createKey = createKey;
 exports.getPublicKey = getPublicKey;
 
 function verifySignature(publicKey, origin, signature) {
-    return ed.verify(signature, origin, publicKey);
+    return ec.verify(origin, signature, publicKey);
 }
 
 function createSignature(key, origin) {
-    return ed.sign(origin, key.publicKey, key.secretKey).toString('hex');
+    return key.sign(origin).toHex().toLowerCase();
 }
 
 /**
@@ -19,9 +22,9 @@ function createSignature(key, origin) {
  * @param  {string} password Create key from password
  */
 function createKey(secret) {
-  return ed.createKeyPair(secret);
+    return ec.keyFromSecret(secret);
 }
 
 function getPublicKey(key) {
-    return key.publicKey.toString('hex');
+    return key.getPublic('hex').toLowerCase();
 }

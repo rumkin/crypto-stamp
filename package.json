@@ -1,6 +1,6 @@
 {
   "name": "crypto-stamp",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "Cryptography stamp algorythm",
   "main": "src/crypto-stamp.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/rumkin/crypto-stamp#readme",
   "dependencies": {
-    "ed25519-supercop": "^1.0.2",
+    "elliptic": "^6.4.0",
     "normjson": "^1.1.0"
   },
   "devDependencies": {

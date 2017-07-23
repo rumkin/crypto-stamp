@@ -15,7 +15,7 @@ const {
 describe('CryptoStamp.generate', () => {
     it('Should generate and verify stamp', () => {
         var key = cryptoStamp.createKey(
-          cryptoStamp.createSecret('user:1234567890')
+          cryptoStamp.createSecret('user:1234567890', 1)
         );
 
         var stamp = cryptoStamp.createStamp({
