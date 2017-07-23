@@ -12,8 +12,8 @@ const {
     VERSION,
 } = cryptoStamp;
 
-describe('CryptoStamp.generate', () => {
-    it('Should generate and verify stamp', () => {
+describe('CryptoStamp.generate', function () {
+    it('Should generate and verify stamp', function () {
         var key = cryptoStamp.createKey(
           cryptoStamp.createSecret('user:1234567890', 1)
         );
@@ -28,7 +28,7 @@ describe('CryptoStamp.generate', () => {
         assert(cryptoStamp.verifyStamp(stamp, getPublicKey(key)), 'Signature verified');
     });
 
-    it('Should verify token', () => {
+    it('Should verify token', function ()  {
         var key = cryptoStamp.createKey(
           cryptoStamp.createSecret('user:1234567890')
         );
@@ -45,7 +45,7 @@ describe('CryptoStamp.generate', () => {
         assert(cryptoStamp.verifyStamp(cryptoStamp.decodeToken(token), cryptoStamp.getPublicKey(key)), 'Signature verified');
     });
 
-    it('Should not verify unknown algorithm', () => {
+    it('Should not verify unknown algorithm', function ()  {
         var key = cryptoStamp.createKey(
           cryptoStamp.createSecret('user:1234567890')
         );
@@ -82,8 +82,8 @@ describe('CryptoStamp.generate', () => {
         should(stamp).be.deepEqual(decodeToken(encodeToken(stamp)));
     });
 
-    describe('Stamp instance', () => {
-        it('Should verify stamp', () => {
+    describe('Stamp instance', function ()  {
+        it('Should verify stamp', function ()  {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
@@ -100,7 +100,7 @@ describe('CryptoStamp.generate', () => {
             assert(stamper.verify(stamp), 'Signature is valid');
         });
 
-        it('Should not verify changed stamp', () => {
+        it('Should not verify changed stamp', function ()  {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
@@ -121,7 +121,7 @@ describe('CryptoStamp.generate', () => {
             assert(! stamper.verify(stamp), 'Signature is valid');
         });
 
-        it('Should verify token', () => {
+        it('Should verify token', function ()  {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
@@ -141,7 +141,7 @@ describe('CryptoStamp.generate', () => {
             assert(stamper.verify(stamp), 'Signature is valid');
         });
 
-        it('Should generate custom token', () => {
+        it('Should generate custom token', function ()  {
             let stamper = new cryptoStamp.Stamper({
                 owner: 'user@host',
                 key: cryptoStamp.createKey(
