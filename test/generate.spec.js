@@ -1,10 +1,10 @@
 const cryptoStamp = require('..');
 const assert = require('assert');
 const should = require('should');
+
 const {
     createStamp,
     createKey,
-    createSecret,
     verifyStamp,
     encodeToken,
     decodeToken,
@@ -13,29 +13,14 @@ const {
 } = cryptoStamp;
 
 describe('CryptoStamp.generate', function () {
-    it('Should generate and verify stamp', function () {
-        var key = cryptoStamp.createKey(
-          cryptoStamp.createSecret('user:1234567890', 1)
-        );
-
-        var stamp = cryptoStamp.createStamp({
-            type: 'auth',
-            owner: 'user@host',
-            date: new Date('1970-01-01T00:00:00.000+00:00'),
-            holders: ['host1'],
-        }, key);
-
-        assert(cryptoStamp.verifyStamp(stamp, getPublicKey(key)), 'Signature verified');
-    });
-
     it('Should verify token', function ()  {
         var key = cryptoStamp.createKey(
-          cryptoStamp.createSecret('user:1234567890')
+            cryptoStamp.createHash('1234567890$#')
         );
 
         var stamp = cryptoStamp.createStamp({
             type: 'auth',
-            owner: 'user@host',
+            signer: 'user@host',
             date: new Date('1970-01-01T00:00:00.000+00:00'),
             holders: ['host1'],
         }, key);
@@ -47,12 +32,12 @@ describe('CryptoStamp.generate', function () {
 
     it('Should not verify unknown algorithm', function ()  {
         var key = cryptoStamp.createKey(
-          cryptoStamp.createSecret('user:1234567890')
+            cryptoStamp.createHash('1234567890$#')
         );
 
         var stamp = cryptoStamp.createStamp({
             type: 'auth',
-            owner: 'user@host',
+            signer: 'user@host',
             date: new Date('1970-01-01T00:00:00.000+00:00'),
             holders: ['host1'],
         }, key);
@@ -64,7 +49,7 @@ describe('CryptoStamp.generate', function () {
 
     it('should create encoded token', function() {
         var key = cryptoStamp.createKey(
-          cryptoStamp.createSecret('user:1234567890')
+            cryptoStamp.createHash('1234567890$#')
         );
 
         const data = {
@@ -72,7 +57,7 @@ describe('CryptoStamp.generate', function () {
             payload: {
                 data: 'test',
             },
-            owner: 'user@localhost',
+            signer: 'user@localhost',
             holders: ['localhost'],
             date: new Date(),
         };
@@ -84,14 +69,14 @@ describe('CryptoStamp.generate', function () {
 
     describe('Stamp instance', function ()  {
         it('Should verify stamp', function ()  {
-            let stamper = new cryptoStamp.Stamper({
-                owner: 'user@host',
+            const stamper = new cryptoStamp.Stamper({
+                signer: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678')
+                    cryptoStamp.createHash('1234567890$#')
                 ),
             });
 
-            let stamp = stamper.stamp({
+            const stamp = stamper.stamp({
                type: 'auth',
                payload: {},
                holders: ['host1'],
@@ -101,14 +86,14 @@ describe('CryptoStamp.generate', function () {
         });
 
         it('Should not verify changed stamp', function ()  {
-            let stamper = new cryptoStamp.Stamper({
-                owner: 'user@host',
+            const stamper = new cryptoStamp.Stamper({
+                signer: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678')
+                    cryptoStamp.createHash('1234567890$#')
                 ),
             });
 
-            let stamp = stamper.stamp({
+            const stamp = stamper.stamp({
                type: 'auth',
                payload: {
                    count: 1,
@@ -122,14 +107,14 @@ describe('CryptoStamp.generate', function () {
         });
 
         it('Should verify token', function ()  {
-            let stamper = new cryptoStamp.Stamper({
-                owner: 'user@host',
+            const stamper = new cryptoStamp.Stamper({
+                signer: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678')
+                    cryptoStamp.createHash('1234567890$#')
                 ),
             });
 
-            let stamp = stamper.token(
+            const stamp = stamper.token(
                 stamper.stamp({
                     type: 'auth',
                     payload: {},
@@ -142,14 +127,14 @@ describe('CryptoStamp.generate', function () {
         });
 
         it('Should generate custom token', function ()  {
-            let stamper = new cryptoStamp.Stamper({
-                owner: 'user@host',
+            const stamper = new cryptoStamp.Stamper({
+                signer: 'user@host',
                 key: cryptoStamp.createKey(
-                  cryptoStamp.createSecret('user:12345678')
+                    cryptoStamp.createHash('1234567890$#')
                 ),
             });
 
-            let stamp = stamper.token(
+            const stamp = stamper.token(
                 stamper.stamp({
                     type: 'auth',
                     payload: {},

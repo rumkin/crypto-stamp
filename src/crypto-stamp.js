@@ -3,7 +3,6 @@
 const {
     fromBase64,
     toBase64,
-    multiSha256,
     getHash,
 } = require('./utils.js');
 
@@ -14,15 +13,13 @@ const {
     getPublicKey,
 } = require('./elliptic.js');
 
-const VERSION = '0.5.0';
-const FORCE_FACTOR = 1024;
+const VERSION = '1.0.0';
 
 exports.VERSION = VERSION;
 
 exports.createStamp = createStamp;
 exports.verifyStamp = verifyStamp;
 exports.createKey = createKey;
-exports.createSecret = createSecret;
 exports.getPublicKey = getPublicKey;
 exports.createHash = getHash;
 exports.encodeToken = encodeToken;
@@ -32,27 +29,47 @@ const stampProps = [
     'date',
     'hash',
     'holders',
-    'owner',
+    'signer',
     'type',
 ];
 
 /**
- * @type cryptoStampData
- * @prop {string} action Action name
- * @prop {*} [params] Params data
+ * @type cryptoStampParams
+ *
+ * @prop {string} type Stamp action type
+ * @prop {object} [payload] Params data
  * @prop {Date} [date] Date
  * @prop {string} [signer] Signer URI
  * @prop {string[]} [holders] Holders URIs
  */
 
 /**
- * Generate crytostamp object from data and key.
+ * @type cryptoStamp
  *
- * @param  {cryptoStampData} options Cryptostamp data.
- * @param  {object} key   EC Key
- * @return {cryptoStamp} Cryptostamp instance object.
+ * @prop {string} type Stamp action type
+ * @prop {string} hash Hash from type, hash(payload), date, holders and signer.
+ * @prop {Date} date Date
+ * @prop {string} signer Signer URI
+ * @prop {string[]} holders Holders URIs
+ * @prop {string} [publicKey] Signer public key.
+ * @prop {string} [checksum] Hash from payload.
  */
-function createStamp({type, payload = {}, date, owner, holders}, ...args) {
+
+/**
+ * @type Key
+ *
+ * @prop {object} publicKey Key's public part.
+ * @prop {object} privateKey Key's secret part.
+ */
+
+/**
+ * Generates crytostamp object from data and key.
+ *
+ * @param  {cryptoStampParams} options Cryptostamp data.
+ * @param  {object} key   EC Key
+ * @returns {cryptoStamp} Cryptostamp instance object.
+ */
+function createStamp({type, payload = {}, date, signer, holders}, ...args) {
     let [full, key] = args;
 
     if (args.length < 2) {
@@ -61,16 +78,16 @@ function createStamp({type, payload = {}, date, owner, holders}, ...args) {
     }
 
     // Create hash data
-    const payloadHash = getHash(payload);
+    const hash = getHash(payload).toString('hex');
     const stamp = {
-        owner,
+        signer,
         holders,
         type,
         date,
-        hash: payloadHash,
+        hash,
     };
 
-    const checksum = getHash(stamp, stampProps);
+    const checksum = getHash(stamp, stampProps).toString('hex');
 
     stamp.signature = createSignature(key, checksum);
     stamp.alg = 'eddsa';
@@ -78,17 +95,18 @@ function createStamp({type, payload = {}, date, owner, holders}, ...args) {
 
     if (full) {
         stamp.publicKey = getPublicKey(key);
-        stamp.checksum = getHash(stamp, stampProps);
+        stamp.checksum = getHash(stamp, stampProps).toString('hex');
     }
 
     return stamp;
 }
 
 /**
- * Verify Cryptostamp instance.
+ * Verifies Cryptostamp instance.
+ *
  * @param  {object} stamp Cryptostamp
  * @param  {string|Buffer} publicKey   Stamp public key.
- * @return {bool} Returns true if value is verified.
+ * @returns {bool} Returns true if value is verified.
  */
 function verifyStamp(stamp, publicKey) {
     if (stamp.alg !== 'eddsa') {
@@ -96,23 +114,25 @@ function verifyStamp(stamp, publicKey) {
     }
 
     if ('payload' in stamp) {
-        const hash = getHash(stamp.payload);
+        const hash = getHash(stamp.payload).toString('hex');
         if (hash !== stamp.hash) {
             return false;
         }
     }
 
-    return verifySignature(publicKey, getHash(stamp, stampProps), stamp.signature);
+    return verifySignature(
+        publicKey, getHash(stamp, stampProps).toString('hex'), stamp.signature
+    );
 }
 
 /**
- * Parse base64 envelope.
+ * Parses base64 envelope.
  *
  * @param {object} head Base64 envelope head
  * @param {object} body Base64 envelope body
  * @param {Buffer|string} Public key
  * @param {Buffer|string} Secret key
- * @return {string} Base64 envelope
+ * @returns {string} Base64 envelope
  */
 function encodeToken(body) {
     const head = {type: 'cryptostamp', ver: VERSION};
@@ -121,10 +141,10 @@ function encodeToken(body) {
 }
 
 /**
- * Parse base64 envelope.
+ * Parses base64 envelope.
  *
  * @param {string} token Base64 envelope
- * @return {CryptoStamp} Crypto stamp instance
+ * @returns {CryptoStamp} Crypto stamp instance
  */
 function decodeToken(token) {
     let [head, body] = token.split('.');
@@ -155,33 +175,17 @@ function decodeToken(token) {
 
 // Helpers
 
-/**
- * Create 32 bytes secret from password, with specified force factor
- *
- * @param  {string} password Password
- * @param  {number} forceFactor Ciclec of password recalculation.
- * @return {ed25519.keyPair} Keypair
- */
-function createSecret(password, forceFactor = FORCE_FACTOR) {
-    if (typeof password !== 'string') {
-        throw new Error('Argument #1 hould be a String');
-    }
-
-    if (typeof forceFactor !== 'number') {
-        throw new Error('Argument #2 hould be a Number');
-    }
-
-    return multiSha256(password, forceFactor);
-}
-
 class Stamper {
     /**
+     *
+     *
      * @constructor
-     * @param {{owner, key}} options Crypto stamper options object. Contains default values
+     * @param {{signer:string, key:Key}} options Crypto stamper options object
+     *                                           Contains default values.
      */
     constructor(options = {}) {
-        if (options.owner) {
-            this.setOwner(options.owner);
+        if (options.signer) {
+            this.setSigner(options.signer);
         }
 
         if (options.key) {
@@ -190,11 +194,11 @@ class Stamper {
     }
 
     /**
-     * Set public and private keys
+     * setKey sets public and private keys.
      *
-     * @param {Buffer|string|{publicKey,secretKey} Public key buffer or keypair object.
+     * @param {Buffer|string|Key} Public key buffer or keypair object.
      * @param {Buffer|string} Secret key
-     * @return {this}
+     * @returns {this}
      */
     setKey(key) {
         this.key = key;
@@ -203,28 +207,28 @@ class Stamper {
     }
 
     /**
-     * Set default owner
+     * Set default signer.
      *
-     * @param {string} owner Owner name
-     * @return {this}
+     * @param {string} signer Signer name
+     * @returns {this}
      */
-    setOwner(owner) {
-        this.owner = owner;
+    setSigner(signer) {
+        this.signer = signer;
         return this;
     }
 
     /**
-     * Create crypto stamp object
+     * Creates crypto stamp object.
      *
-     * @param {object} {} Object with properties: action, params, date, owner, holder
-     * @returns {object} CryptoStamp object.
+     * @param {cryptoStampParams} {} Crypto stamp params object.
+     * @returns {cryptoStamp} CryptoStamp object.
      */
-    stamp({type, payload = {}, date = new Date(), owner = this.owner, holders}) {
+    stamp({type, payload = {}, date = new Date(), signer = this.signer, holders}) {
         if (! this.key) {
             throw new Error('Keys not set');
         }
 
-        const stamp = createStamp({type, payload, date, owner, holders}, this.key);
+        const stamp = createStamp({type, payload, date, signer, holders}, this.key);
 
         if (! this.debug) {
             delete stamp.checksum;
@@ -234,9 +238,9 @@ class Stamper {
     }
 
     /**
-     * Verify cryptostamp object or token.
+     * Verifies cryptostamp object or token.
      *
-     * @param {object|string} stamp Verify base64 envlope token or stamp object.
+     * @param {cryptoStamp|string} stamp Verify base64 envelope token or stamp object.
      * @returns {boolean} Return true if signature is valid.
      */
     verify(stamp) {
@@ -247,15 +251,16 @@ class Stamper {
         return verifyStamp(stamp, getPublicKey(this.key));
     }
 
+
     /**
-     * Parse base64 envelope.
+     * token - Creates a base64-token from cryptostamp object.
      *
-     * @param {object} head Base64 envelope head
-     * @param {object} body Base64 envelope body
-     * @return {string} Base64 envelope
+     * @param {cryptoStamp} stamp Crypto stamp object
+     *
+     * @returns {string} base64 encoded token.
      */
-    token(body) {
-        return encodeToken(body);
+    token(stamp) {
+        return encodeToken(stamp);
     }
 }
 
