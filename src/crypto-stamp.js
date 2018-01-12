@@ -95,7 +95,7 @@ function createStamp({type, payload = {}, date, signer, holders}, ...args) {
 
     if (full) {
         stamp.publicKey = getPublicKey(key);
-        stamp.checksum = getHash(stamp, stampProps).toString('hex');
+        stamp.checksum = checksum;
     }
 
     return stamp;

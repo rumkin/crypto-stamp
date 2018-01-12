@@ -3,71 +3,82 @@ const assert = require('assert');
 const should = require('should');
 
 const {
+    VERSION,
     createStamp,
     createKey,
     verifyStamp,
     encodeToken,
     decodeToken,
     getPublicKey,
-    VERSION,
+    createHash,
 } = cryptoStamp;
 
-describe('CryptoStamp.generate', function () {
-    it('Should verify token', function ()  {
-        var key = cryptoStamp.createKey(
-            cryptoStamp.createHash('1234567890$#')
-        );
+const meta = require('../package.json');
 
-        var stamp = cryptoStamp.createStamp({
-            type: 'auth',
-            signer: 'user@host',
-            date: new Date('1970-01-01T00:00:00.000+00:00'),
-            holders: ['host1'],
-        }, key);
-
-        const token = cryptoStamp.encodeToken(stamp);
-
-        assert(cryptoStamp.verifyStamp(cryptoStamp.decodeToken(token), cryptoStamp.getPublicKey(key)), 'Signature verified');
+describe('CryptoStamp', function () {
+    describe('Version', function() {
+        it('should match with package.json#version', function() {
+            assert(meta.version === VERSION, `Version equals is ${meta.version}`);
+        });
     });
 
-    it('Should not verify unknown algorithm', function ()  {
-        var key = cryptoStamp.createKey(
-            cryptoStamp.createHash('1234567890$#')
-        );
+    describe('createStamp()', function() {
+        it('Should verify token', function ()  {
+            var key = cryptoStamp.createKey(
+                cryptoStamp.createHash('1234567890$#')
+            );
 
-        var stamp = cryptoStamp.createStamp({
-            type: 'auth',
-            signer: 'user@host',
-            date: new Date('1970-01-01T00:00:00.000+00:00'),
-            holders: ['host1'],
-        }, key);
+            var stamp = cryptoStamp.createStamp({
+                type: 'auth',
+                signer: 'user@host',
+                date: new Date('1970-01-01T00:00:00.000+00:00'),
+                holders: ['host1'],
+            }, key);
 
-        stamp.alg = 'rsa';
+            const token = cryptoStamp.encodeToken(stamp);
 
-        assert(! cryptoStamp.verifyStamp(stamp, key), 'Verify stamp return false');
+            assert(cryptoStamp.verifyStamp(cryptoStamp.decodeToken(token), cryptoStamp.getPublicKey(key)), 'Signature verified');
+        });
+
+        it('Should not verify unknown algorithm', function ()  {
+            var key = cryptoStamp.createKey(
+                cryptoStamp.createHash('1234567890$#')
+            );
+
+            var stamp = cryptoStamp.createStamp({
+                type: 'auth',
+                signer: 'user@host',
+                date: new Date('1970-01-01T00:00:00.000+00:00'),
+                holders: ['host1'],
+            }, key);
+
+            stamp.alg = 'rsa';
+
+            assert(! cryptoStamp.verifyStamp(stamp, key), 'Verify stamp return false');
+        });
+
+        it('should create encoded token', function() {
+            var key = cryptoStamp.createKey(
+                cryptoStamp.createHash('1234567890$#')
+            );
+
+            const data = {
+                type: 'test',
+                payload: {
+                    data: 'test',
+                },
+                signer: 'user@localhost',
+                holders: ['localhost'],
+                date: new Date(),
+            };
+
+            const stamp = createStamp(data, key);
+
+            should(stamp).be.deepEqual(decodeToken(encodeToken(stamp)));
+        });
     });
 
-    it('should create encoded token', function() {
-        var key = cryptoStamp.createKey(
-            cryptoStamp.createHash('1234567890$#')
-        );
-
-        const data = {
-            type: 'test',
-            payload: {
-                data: 'test',
-            },
-            signer: 'user@localhost',
-            holders: ['localhost'],
-            date: new Date(),
-        };
-
-        const stamp = createStamp(data, key);
-
-        should(stamp).be.deepEqual(decodeToken(encodeToken(stamp)));
-    });
-
-    describe('Stamp instance', function ()  {
+    describe('new Stamp()', function ()  {
         it('Should verify stamp', function ()  {
             const stamper = new cryptoStamp.Stamper({
                 signer: 'user@host',
@@ -144,6 +155,14 @@ describe('CryptoStamp.generate', function () {
             );
 
             assert(stamper.verify(stamp), 'Signature is valid');
+        });
+    });
+
+    describe('createHash()', function() {
+        const SHA_HASH = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a';
+
+        it('should match standart hash', function() {
+            assert(createHash('').toString('hex') === SHA_HASH, 'Equals standart hash');
         });
     });
 });

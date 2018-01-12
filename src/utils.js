@@ -1,4 +1,4 @@
-const keccak = require('keccak');
+const sha3 = require("js-sha3").sha3_256;
 const normjson = require('normjson');
 
 exports.toBase64 = toBase64;
@@ -57,9 +57,19 @@ function getHash(data, schema) {
  * @returns {buffer}       Hash generation result.
  */
 function hash(value) {
-    var hash = keccak('keccak256');
+    return sha3Hash(value);
+}
+
+/**
+ * Converts value to sha256 hash.
+ *
+ * @param  {string} value Value to generate hash.
+ * @returns {buffer}       Hash generation result.
+ */
+function sha3Hash(value) {
+    const hash = sha3.create();
 
     hash.update(value);
 
-    return hash.digest();
+    return Buffer.from(hash.hex(), 'hex');
 }
