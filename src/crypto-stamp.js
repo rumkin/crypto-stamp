@@ -13,7 +13,7 @@ const {
     getPublicKey,
 } = require('./elliptic.js');
 
-const VERSION = '1.0.0';
+const VERSION = '1.2.0';
 
 exports.VERSION = VERSION;
 
