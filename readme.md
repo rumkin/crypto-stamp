@@ -17,15 +17,15 @@ Example using pure functions:
 
 ```javascript
 const key = cryptoStamp.createKey(
-  cryptoStamp.createSecret('...SuperSecretPassword...')
+  cryptoStamp.createHash('...YourSecretValue...')
 );
 
 // Create crypto stamp
 const stamp = cryptoStamp.createStamp({
   type: 'auth',
-  owner: 'user@host',
+  signer: 'user@cryptodoc.org',
   date: new Date('1970-01-01T00:00:00.000+00:00'),
-  holders: ['host1'],
+  holders: ['cryptodoc.org'],
 }, key);
 
 // Verify stamp content and signature
@@ -38,15 +38,15 @@ Example with `Stamper` class:
 const cryptoStamp = require('crypto-stamp');
 
 const stamper = new cryptoStamp.Stamper({
-  owner: 'user@host',
+  signer: 'user@cryptodoc.org',
   key: cryptoStamp.createKey(
-    cryptoStamp.createSecret('...SuperSecretPassword...'),
+    cryptoStamp.createHash('...YourSecretValue...'),
   ),
 });
 
 const stamp = stamper.stamp({
   type: 'auth',
-  holders: ['host1'],
+  holders: ['cryptodoc.org'],
 });
 
 stamper.verify(stamp);
@@ -54,7 +54,7 @@ stamper.verify(stamp);
 
 ## Stamp
 
-Each stamp authorize one action at a time from one owner to
+Each stamp authorize one action at a time from one signer to
 one or more holders. Params is an action arguments specific
 for custom method.
 
@@ -66,19 +66,19 @@ for custom method.
   "payload": {},
   // Date of creation
   "date": "1970-01-01T00:00:00.000+00:00",
-  // Stamp owner
-  "owner": "user@host0",
+  // Stamp signer
+  "signer": "user@cryptodoc.org",
   // Stamp holders
-  "holders": ["host1", "host2", "user@host3"],
+  "holders": ["cryptodoc.org", "localhost", "user@host3"],
   // Signature human readable description. Optional
   "description": "Authentication token",
-  // Sha256 hash from "payload"
+  // SHA3-256 hash from "payload"
   "hash": "...hash...",
   // Signature algorithm. Eddsa is currently supported by default
   "alg": "eddsa",
-  // Signature of Sha256(action, hash, owner, holders and date)
+  // Signature of SHA3-256 hash: `sha3(action, hash, signer, holders and date)``
   "signature": "...signature...",
-  // Checksum (optional, includes in debug) sha256 from type, owner, holders, date and hash
+  // Checksum (optional, includes in debug) SHA3-256 from type, signer, holders, date and hash
   "checksum": "...hash...",
 }
 ```
@@ -90,24 +90,24 @@ for custom method.
 | type        | String   | Stamp type. For example "auth" or "accept"                                                                                  |
 | payload     | object        | Stamp data. Could be any type. Differs for each action. Could be deleted when stamp created. By default it's an empty object. |
 | date        | String   | Date string in ISO 8601                                                                                                      |
-| owner       | String   | **Optional**. Owner URI (username and host): "user@localhost" or username only.                                                                |
+| signer      | String   | **Optional**. Owner URI (username and host): "user@localhost" or username only.                                                                |
 | holders     | String[] | **Optional**. Holders is an array of signature receivers URIs                                                                |
 | description | String   | **Optional**. Textual representation of stamp content                                                                        |
-| hash        | String   | Sha256 hash from payload                                                                                                      |
+| hash        | String   | SHA3-256 hash from payload                                                                                                      |
 | signature   | String   | ed25519 signature of hash from stamp data
 | alg         | String   | Signature algorithm. `eddsa` by default.                                                                                   |
 | publicKey   | String   | Public key for signature verification.                                                                                   |
 
 ### Hash
 
-Hash is a Sha256 hash sum from params converted to JSON string.
+Hash is a SHA3-256 hash sum from params converted to JSON string.
 
 ### Signature
 
-Signature is a Sha256 hash from normalized JSON string of object with properties:
+Signature is a SHA3-256 (NIST) hash from normalized JSON string of object with properties:
 
 * type
 * date
-* owner
+* signer
 * holders
 * hash
