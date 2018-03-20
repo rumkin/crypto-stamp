@@ -193,9 +193,9 @@ Stamp params
 
 | Param | Type | Description |
 |:------|:-----|:------------|
-| alg | String | Signature algorithm. `eddsa` by default. |
+| alg | String | Signature algorithm |
 | signer | String | Signature authentication value publicKey, URI, name, etc |
-| signature | String | ed25519 signature of hash from stamp data |
+| signature | * | Signature itself. Usually hex string but depends on algorithm |
 | ... | * | Any algorithm based params |
 
 ### Hash
