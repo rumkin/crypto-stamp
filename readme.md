@@ -1,8 +1,10 @@
 # Crypto Stamp
 
 [![npm](https://img.shields.io/npm/v/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
-[![npm](https://img.shields.io/npm/dw/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
 [![Travis](https://img.shields.io/travis/rumkin/crypto-stamp.svg?style=flat-square)](https://travis-ci.org/rumkin/crypto-stamp)
+![](https://img.shields.io/badge/coverage-88.89%25-green.svg?style=flat-square)
+[![npm](https://img.shields.io/npm/dw/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
+
 
 Web-ready format and library for signing and verifying asynchronous
 cryptography signatures. It can be used for authorization and document verification
