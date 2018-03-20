@@ -1,7 +1,7 @@
 {
   "name": "crypto-stamp",
-  "version": "2.0.0",
-  "description": "Create rich crypto signatures (stamps)",
+  "version": "2.0.1",
+  "description": "Create web ready crypto signatures (stamps)",
   "main": "src/crypto-stamp.js",
   "scripts": {
     "cov": "istanbul cover node_modules/mocha/bin/_mocha -- -u exports -R spec test/**.spec.js",
@@ -15,7 +15,10 @@
   "keywords": [
     "cryptography",
     "crypto",
-    "authorization"
+    "authorization",
+    "sugnature",
+    "sign",
+    "asynchronous cryptography"
   ],
   "author": "rumkin",
   "license": "MIT",

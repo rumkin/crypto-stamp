@@ -53,7 +53,7 @@ if (await verifyStamp(stamp, verifier)) {
 }
 ```
 
-Stamp can be used like a WebToken.
+Stamp can be used like a WebToken with `encodeToken` and `decodeToken` methods.
 
 ## Stamp
 
@@ -92,12 +92,20 @@ Each stamp authorize one action at a time to unlimited or several holders.
 Method createsStamp converts StampData into deterministic length prefixed
 hash and sign with Signature interface instance.
 
+```javascript
+const stamp = await verifyStamp(data, verifier)
+```
+
 ### verifyStamp()
 ```text
 (stamp:Stamp, verifier:StampVerifier) -> Promise<Boolean,Error>
 ```
 Method verifyStamp converts StampData from `stamp` into deterministic
 length prefixed hash and verify it with StampVerifier interface instance.
+
+```javascript
+const isValid = await verifyStamp(stamp, verifier)
+```
 
 ### StampData Type
 ```text
@@ -110,7 +118,7 @@ length prefixed hash and verify it with StampVerifier interface instance.
 ```
 Params for stamp creation.
 
-### StampSignature
+### StampSignature Type
 ```text
 {
     alg: String,
@@ -148,6 +156,27 @@ See example of ed25519 signer implementation in `example/ed25519.js`.
 ```
 
 See example of ed25519 verifier implementation in `example/ed25519.js`.
+
+### encodeToken()
+
+```text
+(stamp:Stamp) -> String
+```
+Convert base64 encoded web token string.
+
+```javascript
+encodeToken(stamp) // -> String
+```
+
+### decodeToken()
+```text
+(token:String) -> Stamp
+```
+Convert base64 encoded WebToken to Stamp object.
+
+```javascript
+decodeToken(token) // -> Stamp
+```
 
 ## Spec
 
