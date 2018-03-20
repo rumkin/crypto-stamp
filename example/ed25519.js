@@ -6,26 +6,32 @@ class Signer {
         this.key = ec.keyFromSecret(secret);
     }
 
-    async sign(hash) {
-        const signature = this.key.sign(hash);
+    sign(hash) {
+        return new Promise(function (resolve) {
+            const signature = this.key.sign(hash);
 
-        return {
-            alg: 'ed25519',
-            signer: this.key.getPublic('hex'),
-            signature: signature.toHex().toLowerCase(),
-        };
+            resolve({
+                alg: 'ed25519',
+                signer: this.key.getPublic('hex'),
+                signature: signature.toHex().toLowerCase(),
+            });
+        });
     }
 }
 
 class Verifier {
-    async verify(hash, {alg, signer, signature}) {
-        if (alg !== 'ed25519') {
-            return false;
-        }
+    verify(hash, {alg, signer, signature}) {
+        return new Promise(function (resolve) {
+            if (alg !== 'ed25519') {
+                return false;
+            }
 
-        const key = ec.keyFromPublic(signer);
+            const key = ec.keyFromPublic(signer);
 
-        return key.verify(hash, signature);
+            resolve(
+                key.verify(hash, signature)
+            );
+        });
     }
 }
 
