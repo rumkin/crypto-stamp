@@ -21,7 +21,8 @@ npm i crypto-stamp
 
 ## Usage
 
-Example using pure functions:
+Example of creation, signing and verification stamp with `ed25519` custom
+stamp signer and verifier.
 
 ```javascript
 // Require CryptoStamp methods
@@ -57,7 +58,8 @@ Stamp can be used like a WebToken with `encodeToken` and `decodeToken` methods.
 
 ## Stamp
 
-Each stamp authorize one action at a time to unlimited or several holders.
+Each stamp authorize action with `type` and custom params `payload`
+at a time as `date` to unlimited or several `holders`.
 
 ```javascript
 {
@@ -140,7 +142,7 @@ Params for stamp creation.
 Stamp is StampData with StampSignature object.
 
 ### StampSigner Interface
-```
+```text
 {
     sign(hash:Uint8Array|Buffer) -> Promise<Stamp,Error>
 }
@@ -149,7 +151,7 @@ Stamp is StampData with StampSignature object.
 See example of ed25519 signer implementation in `example/ed25519.js`.
 
 ### StampVerifier Interface
-```
+```text
 {
     verify(hash:Uint8Array|Buffer, StampSignature) -> Promise<Boolean,Error>
 }
