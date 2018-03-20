@@ -1,11 +1,12 @@
 {
   "name": "crypto-stamp",
-  "version": "1.2.1",
-  "description": "Cryptography stamp algorythm",
+  "version": "2.0.0",
+  "description": "Create rich crypto signatures (stamps)",
   "main": "src/crypto-stamp.js",
   "scripts": {
     "cov": "istanbul cover node_modules/mocha/bin/_mocha -- -u exports -R spec test/**.spec.js",
-    "test": "mocha test/**.spec.js"
+    "test": "mocha test/**.spec.js",
+    "prepublish": "npm test"
   },
   "repository": {
     "type": "git",
@@ -23,11 +24,12 @@
   },
   "homepage": "https://github.com/rumkin/crypto-stamp#readme",
   "dependencies": {
-    "elliptic": "^6.4.0",
     "js-sha3": "^0.7.0",
+    "lodash.pick": "^4.4.0",
     "normjson": "^1.4.0"
   },
   "devDependencies": {
+    "elliptic": "^6.4.0",
     "istanbul": "^0.4.3",
     "mocha": "^2.4.5",
     "should": "^11.2.1"

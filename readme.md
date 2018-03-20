@@ -1,11 +1,17 @@
-# Crypto Stamps
+# Crypto Stamp
 
-Library for generating and verifying cryptography stamps based on ed25519
-elliptic curves and sha256 hashes.
+[![npm](https://img.shields.io/npm/v/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
+[![npm](https://img.shields.io/npm/dw/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
+[![Travis](https://img.shields.io/travis/rumkin/crypto-stamp.svg?style=flat-square)](https://travis-ci.org/rumkin/crypto-stamp)
+
+Web-ready format and library for signing and verifying asynchronous
+cryptography signatures. It can be used for authorization and document verification
+in web pages and web services. It designed to be replay and length expansion
+attacks resistant.
 
 ## Installation
 
-Install with npm
+Install with npm:
 
 ```shell
 npm i crypto-stamp
@@ -16,98 +22,161 @@ npm i crypto-stamp
 Example using pure functions:
 
 ```javascript
-const key = cryptoStamp.createKey(
-  cryptoStamp.createHash('...YourSecretValue...')
-);
+// Require CryptoStamp methods
+const {createStamp, verifyStamp} = require('crypto-stamp');
+// Require custom CryptoStamp encryption library for example ed25519
+const {Signer, Verifier} = require('./crypto-stamp/ed25519');
 
-// Create crypto stamp
-const stamp = cryptoStamp.createStamp({
-  type: 'auth',
-  signer: 'user@cryptodoc.org',
-  date: new Date('1970-01-01T00:00:00.000+00:00'),
-  holders: ['cryptodoc.org'],
-}, key);
-
-// Verify stamp content and signature
-cryptoStamp.verifyStamp(stamp, key);
-```
-
-Example with `Stamper` class:
-
-```javascript
-const cryptoStamp = require('crypto-stamp');
-
-const stamper = new cryptoStamp.Stamper({
-  signer: 'user@cryptodoc.org',
-  key: cryptoStamp.createKey(
-    cryptoStamp.createHash('...YourSecretValue...'),
-  ),
+// Signature generation item
+const signer = new Signer({
+    secret: Buffer.alloc(32), // Provide secret key
 });
 
-const stamp = stamper.stamp({
-  type: 'auth',
-  holders: ['cryptodoc.org'],
-});
+// Signature verification item
+const verifier = new Verifier();
 
-stamper.verify(stamp);
-```
+// Stamp data
+const params = {
+    type: 'auth',
+    date: new Date('1970-01-01T00:00:00.000+00:00'),
+    holders: ['cryptodoc.org'],
+};
 
-## Stamp
+// Generate stamp
+const stamp = await createStamp(params, signer);
 
-Each stamp authorize one action at a time from one signer to
-one or more holders. Params is an action arguments specific
-for custom method.
-
-```javascript
-{
-  // Stamp action type
-  "type": "auth",
-  // Stamp data (optional)
-  "payload": {},
-  // Date of creation
-  "date": "1970-01-01T00:00:00.000+00:00",
-  // Stamp signer
-  "signer": "user@cryptodoc.org",
-  // Stamp holders
-  "holders": ["cryptodoc.org", "localhost", "user@host3"],
-  // Signature human readable description. Optional
-  "description": "Authentication token",
-  // SHA3-256 hash from "payload"
-  "hash": "...hash...",
-  // Signature algorithm. Eddsa is currently supported by default
-  "alg": "eddsa",
-  // Signature of SHA3-256 hash: `sha3(action, hash, signer, holders and date)``
-  "signature": "...signature...",
-  // Checksum (optional, includes in debug) SHA3-256 from type, signer, holders, date and hash
-  "checksum": "...hash...",
+// Verify stamp
+if (await verifyStamp(stamp, verifier)) {
+    // Stamp is valid. Do something.
 }
 ```
 
-## Specification
+Stamp can be used like a WebToken.
 
-| Param       | Type     | Description                                                                                                                  |
-|:------------|:---------|:-----------------------------------------------------------------------------------------------------------------------------|
-| type        | String   | Stamp type. For example "auth" or "accept"                                                                                  |
-| payload     | object        | Stamp data. Could be any type. Differs for each action. Could be deleted when stamp created. By default it's an empty object. |
-| date        | String   | Date string in ISO 8601                                                                                                      |
-| signer      | String   | **Optional**. Owner URI (username and host): "user@localhost" or username only.                                                                |
-| holders     | String[] | **Optional**. Holders is an array of signature receivers URIs                                                                |
-| description | String   | **Optional**. Textual representation of stamp content                                                                        |
-| hash        | String   | SHA3-256 hash from payload                                                                                                      |
-| signature   | String   | ed25519 signature of hash from stamp data
-| alg         | String   | Signature algorithm. `eddsa` by default.                                                                                   |
-| publicKey   | String   | Public key for signature verification.                                                                                   |
+## Stamp
+
+Each stamp authorize one action at a time to unlimited or several holders.
+
+```javascript
+{
+    // Stamp action type. Name or URI.
+    "type": "auth",
+    // Stamp data (optional)
+    "payload": {},
+    // Date of creation
+    "date": "1970-01-01T00:00:00.000+00:00",
+    // Stamp holders
+    "holders": ["cryptodoc.org", "admin@cryptodoc.org"],
+    // Stamp verification data
+    "stamp": {
+        // Signature algorithm name or URI.
+        "alg": "ed25519",
+        // Signer is value with allow to identify signer and validate signature
+        "signer": "...signer...",
+        // Signature of length prefixed SHA3-256 hash
+        "signature": "...signature...",
+    },
+}
+```
+
+## API
+
+### createStamp()
+
+```text
+(data:StampData, signer:StampSigner) -> Promise<Stamp,Error>
+```
+
+Method createsStamp converts StampData into deterministic length prefixed
+hash and sign with Signature interface instance.
+
+### verifyStamp()
+```text
+(stamp:Stamp, verifier:StampVerifier) -> Promise<Boolean,Error>
+```
+Method verifyStamp converts StampData from `stamp` into deterministic
+length prefixed hash and verify it with StampVerifier interface instance.
+
+### StampData Type
+```text
+{
+    type: String,
+    payload: Object,
+    date: Date|Number,
+    holders: String[],
+}
+```
+Params for stamp creation.
+
+### StampSignature
+```text
+{
+    alg: String,
+    signer: String,
+    signature: String,
+}
+```
+
+### Stamp Type
+```text
+{
+    type: String,
+    payload: Object,
+    date: Date|Number,
+    holders: String[],
+    stamp: StampSignature
+}
+```
+Stamp is StampData with StampSignature object.
+
+### StampSigner Interface
+```
+{
+    sign(hash:Uint8Array|Buffer) -> Promise<Stamp,Error>
+}
+```
+
+See example of ed25519 signer implementation in `example/ed25519.js`.
+
+### StampVerifier Interface
+```
+{
+    verify(hash:Uint8Array|Buffer, StampSignature) -> Promise<Boolean,Error>
+}
+```
+
+See example of ed25519 verifier implementation in `example/ed25519.js`.
+
+## Spec
+
+Data params.
+
+| Param | Type | Description |
+|:------|:-----|:------------|
+| type | String | Stamp type. For example "auth" or "accept". Could be complete URI |
+| payload | Object | Stamp data. Could be any type. Differs for each action. Could be deleted when stamp created. By default it's an empty object |
+| date | String,Number | Date string in ISO 8601 format or unix timestamp |
+| holders | String[] | **Optional**. Holders is an array of signature receivers URIs |
+
+Stamp params
+
+| Param | Type | Description |
+|:------|:-----|:------------|
+| alg | String | Signature algorithm. `eddsa` by default. |
+| signer | String | Signature authentication value publicKey, URI, name, etc |
+| signature | String | ed25519 signature of hash from stamp data |
+| ... | * | Any algorithm based params |
 
 ### Hash
 
-Hash is a SHA3-256 hash sum from params converted to JSON string.
-
-### Signature
-
-Signature is a SHA3-256 (NIST) hash from normalized JSON string of object with properties:
+Hash is a SHA3-256 digest from 32 Uint Big Endian prefix length of stamp data
+and data converted to deterministic JSON string.
 
 * type
+* payload
 * date
-* signer
 * holders
-* hash
+
+## LICENSE
+
+MIT
