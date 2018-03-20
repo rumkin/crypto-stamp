@@ -7,12 +7,14 @@ class Signer {
     }
 
     sign(hash) {
+        const {key} = this;
+
         return new Promise(function (resolve) {
-            const signature = this.key.sign(hash);
+            const signature = key.sign(hash);
 
             resolve({
                 alg: 'ed25519',
-                signer: this.key.getPublic('hex'),
+                signer: key.getPublic('hex'),
                 signature: signature.toHex().toLowerCase(),
             });
         });
@@ -23,7 +25,8 @@ class Verifier {
     verify(hash, {alg, signer, signature}) {
         return new Promise(function (resolve) {
             if (alg !== 'ed25519') {
-                return false;
+                resolve(false);
+                return;
             }
 
             const key = ec.keyFromPublic(signer);
