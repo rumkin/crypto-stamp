@@ -6,8 +6,10 @@
   "scripts": {
     "cov": "istanbul cover node_modules/mocha/bin/_mocha -- -u exports -R spec test/**.spec.js",
     "test": "mocha test/**.spec.js",
-    "prepublish": "npm test"
+    "prepublish": "npm test && npm run lint",
+    "lint": "eslint src"
   },
+  "pre-commit": ["lint"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rumkin/crypto-stamp.git"
@@ -29,10 +31,12 @@
   "dependencies": {
     "js-sha3": "^0.7.0",
     "lodash.pick": "^4.4.0",
-    "normjson": "^1.4.0"
+    "normjson": "^1.4.0",
+    "pre-commit": "^1.2.2"
   },
   "devDependencies": {
     "elliptic": "^6.4.0",
+    "eslint": "^4.19.1",
     "istanbul": "^0.4.3",
     "mocha": "^2.4.5",
     "should": "^11.2.1"
