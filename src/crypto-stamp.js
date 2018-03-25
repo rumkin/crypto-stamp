@@ -11,7 +11,7 @@ const {
     toHex,
 } = require('./utils.js');
 
-const VERSION = '2.1.0';
+const VERSION = '2.1.1';
 
 exports.VERSION = VERSION;
 exports.createStamp = createStamp;

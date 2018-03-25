@@ -1,6 +1,6 @@
 {
   "name": "crypto-stamp",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Create web ready crypto signatures (stamps)",
   "main": "src/crypto-stamp.js",
   "scripts": {
@@ -31,14 +31,14 @@
   "dependencies": {
     "js-sha3": "^0.7.0",
     "lodash.pick": "^4.4.0",
-    "normjson": "^1.4.0",
-    "pre-commit": "^1.2.2"
+    "normjson": "^1.4.0"
   },
   "devDependencies": {
     "elliptic": "^6.4.0",
     "eslint": "^4.19.1",
     "istanbul": "^0.4.3",
     "mocha": "^2.4.5",
+    "pre-commit": "^1.2.2",
     "should": "^11.2.1"
   },
   "engines": {
