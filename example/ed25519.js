@@ -14,7 +14,7 @@ class Signer {
 
             resolve({
                 alg: 'ed25519',
-                signer: key.getPublic('hex'),
+                publicKey: key.getPublic('hex'),
                 signature: signature.toHex().toLowerCase(),
             });
         });
@@ -22,14 +22,14 @@ class Signer {
 }
 
 class Verifier {
-    verify(hash, {alg, signer, signature}) {
+    verify(hash, {alg, publicKey, signature}) {
         return new Promise(function (resolve) {
             if (alg !== 'ed25519') {
                 resolve(false);
                 return;
             }
 
-            const key = ec.keyFromPublic(signer);
+            const key = ec.keyFromPublic(publicKey);
 
             resolve(
                 key.verify(hash, signature)

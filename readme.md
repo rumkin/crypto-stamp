@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
 [![Travis](https://img.shields.io/travis/rumkin/crypto-stamp.svg?style=flat-square)](https://travis-ci.org/rumkin/crypto-stamp)
 ![](https://img.shields.io/badge/coverage-88.89%25-green.svg?style=flat-square)
+![](https://img.shields.io/badge/source-5.2%20KiB-blue.svg?style=flat-square)
 [![npm](https://img.shields.io/npm/dw/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
 
 
@@ -39,18 +40,18 @@ const signer = new Signer({
 const verifier = new Verifier();
 
 // Stamp data
-const params = {
+const stampData = {
     type: 'auth',
     date: new Date('1970-01-01T00:00:00.000+00:00'),
     holders: ['cryptodoc.org'],
 };
 
 // Generate stamp
-const stamp = await createStamp(params, signer);
+const stamp = await createStamp(stampData, signer);
 
 // Verify stamp
 if (await verifyStamp(stamp, verifier)) {
-    // Stamp is valid. Do something.
+    // Stamp is valid. Yaeee!
 }
 ```
 
@@ -76,7 +77,7 @@ at a time as `date` to unlimited or several `holders`.
         // Signature algorithm name or URI.
         "alg": "ed25519",
         // Signer is value with allow to identify signer and validate signature
-        "signer": "...signer...",
+        "publicKey": "...public key...",
         // Signature of length prefixed SHA3-256 hash
         "signature": "...signature...",
     },
@@ -124,8 +125,8 @@ Params for stamp creation.
 ```text
 {
     alg: String,
-    signer: String,
-    signature: String,
+    signature: String|Object,
+    signer: String?,
 }
 ```
 
@@ -180,25 +181,52 @@ Convert base64 encoded WebToken to Stamp object.
 decodeToken(token) // -> Stamp
 ```
 
+### getHash()
+```text
+(value:Object, schema?:Object|Array|(() -> Object|Array)) -> Uint8Array
+```
+
+Return SHA3 hash from deterministic JSON string from JS `value`. Use `schema`
+to select exact object properties with [normjson](https://npmjs.com/package/normjson).
+
+> **NOTE** V8 doesn't sort object properties in
+lexicographical order so two familiar objects with different properties order
+will produce different JSON strings and thus different hashes.
+
+
+##### Example
+
+```javascript
+toHex(getHash({a: 1, b: 2})); // -> '7ed7e7ed5657f00683c745c9decb1b985bdd634f68f9f07c68e70b9593637da6'
+toHex(getHash({b: 2, a: 1})); // -> '7ed7e7ed5657f00683c745c9decb1b985bdd634f68f9f07c68e70b9593637da6'
+```
+
+### toHex()
+```text
+(array:Uint8Array) -> String
+```
+
+Receive Uint8Array and convert it to hex string.
+
 ## Spec
 
 Data params.
 
 | Param | Type | Description |
 |:------|:-----|:------------|
-| type | String | Stamp type. For example "auth" or "accept". Could be complete URI |
-| payload | Object | Stamp data. Could be any type. Differs for each action. Could be deleted when stamp created. By default it's an empty object |
-| date | String,Number | Date string in ISO 8601 format or unix timestamp |
-| holders | String[] | **Optional**. Holders is an array of signature receivers URIs |
+| type | String | **Required**. Stamp type. For example "auth" or "accept". Could be complete URI |
+| payload | Object | **Required**. Stamp data. Could be any type. Differs for each action. Could be deleted when stamp created. By default it's an empty object |
+| date | String,Number | _Optional_. Date string in ISO 8601 format or unix timestamp |
+| holders | String[] | _Optional_. Holders is an array of signature receivers URIs |
 
 Stamp params
 
 | Param | Type | Description |
 |:------|:-----|:------------|
 | alg | String | Signature algorithm |
-| signer | String | Signature authentication value publicKey, URI, name, etc |
-| signature | * | Signature itself. Usually hex string but depends on algorithm |
-| ... | * | Any algorithm based params |
+| signature | String|Object | Signature itself. Usually hex string but depends on algorithm |
+| signer | String | _Optional_. Signature authentication value publicKey, URI, name, etc |
+| ... | * | Multiple algorithm based params, for example `publicKey`. |
 
 ### Hash
 

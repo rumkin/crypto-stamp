@@ -43,7 +43,7 @@ describe('CryptoStamp', function () {
                 return verifyStamp(decodeToken(token), verifier);
             })
             .then(function (result) {
-                should(result).be.true();
+                should(result).be.True();
             });
         });
 
