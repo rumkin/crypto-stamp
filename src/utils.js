@@ -84,7 +84,7 @@ function toHex(value) {
     const result = new Array(value.length);
 
     value.forEach((char, i) => {
-        result[i] = char.toString(16).padStart(2, '0');
+        result[i] = ('0' + char.toString(16)).slice(-2);
     });
 
     return result.join('');
