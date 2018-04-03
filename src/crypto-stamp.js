@@ -11,7 +11,7 @@ const {
     toHex,
 } = require('./utils.js');
 
-const VERSION = '2.1.1';
+const VERSION = '2.2.0';
 
 exports.VERSION = VERSION;
 exports.createStamp = createStamp;
@@ -90,7 +90,7 @@ function verifyStamp(stamp, verifier) {
  * @returns {String} Base64 envelope
  */
 function encodeToken(body) {
-    const head = {type: 'cryptostamp', v: VERSION};
+    const head = {type: 'cryptostamp', v: '2.0'};
 
     return toBase64(JSON.stringify(head)) + '.' + toBase64(JSON.stringify(body));
 }
@@ -102,24 +102,24 @@ function encodeToken(body) {
  * @returns {CryptoStamp} Crypto stamp instance
  */
 function decodeToken(token) {
-    let [head, body] = token.split('.');
+    let [header, body] = token.split('.');
 
     try {
-        head = JSON.parse(fromBase64(head));
+        header = JSON.parse(fromBase64(header));
     }
     catch (err) {
-        throw new Error('Token\'s head JSON parsing error');
+        throw new TypeError('Token header JSON parsing error');
     }
 
-    if (head.type !== 'cryptostamp') {
-        throw new Error('Not a cryptostamp token');
+    if (header.type !== 'cryptostamp') {
+        throw new TypeError('Not a cryptostamp token');
     }
 
     try {
         body = JSON.parse(fromBase64(body));
     }
     catch (err) {
-        throw new Error('Token\'s body JSON parsing error');
+        throw new TypeError('Token body JSON parsing error');
     }
 
     // Convert date from string

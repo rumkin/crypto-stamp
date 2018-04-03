@@ -1,15 +1,17 @@
 {
   "name": "crypto-stamp",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Create web ready crypto signatures (stamps)",
   "main": "src/crypto-stamp.js",
   "scripts": {
     "cov": "istanbul cover node_modules/mocha/bin/_mocha -- -u exports -R spec test/**.spec.js",
-    "test": "mocha test/**.spec.js",
+    "test": "mocha test/index.js",
     "prepublish": "npm test && npm run lint",
     "lint": "eslint src"
   },
-  "pre-commit": ["lint"],
+  "pre-commit": [
+    "lint"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rumkin/crypto-stamp.git"

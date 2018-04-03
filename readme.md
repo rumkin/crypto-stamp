@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
 [![Travis](https://img.shields.io/travis/rumkin/crypto-stamp.svg?style=flat-square)](https://travis-ci.org/rumkin/crypto-stamp)
-![](https://img.shields.io/badge/coverage-88.89%25-green.svg?style=flat-square)
+![](https://img.shields.io/badge/coverage-100%25-green.svg?style=flat-square)
 ![](https://img.shields.io/badge/source-5.2%20KiB-blue.svg?style=flat-square)
 [![npm](https://img.shields.io/npm/dw/crypto-stamp.svg?style=flat-square)](https://npmjs.com/packages/crypto-stamp)
 
@@ -65,21 +65,21 @@ at a time as `date` to unlimited or several `holders`.
 ```javascript
 {
     // Stamp action type. Name or URI.
-    "type": "auth",
+    type: 'auth',
     // Stamp data (optional)
-    "payload": {},
+    payload: {},
     // Date of creation
-    "date": "1970-01-01T00:00:00.000+00:00",
+    date: '1970-01-01T00:00:00.000+00:00',
     // Stamp holders
-    "holders": ["cryptodoc.org", "admin@cryptodoc.org"],
+    holders: ['cryptodoc.org', 'admin@cryptodoc.org'],
     // Stamp verification data
-    "stamp": {
+    stamp: {
         // Signature algorithm name or URI.
-        "alg": "ed25519",
-        // Signer is value with allow to identify signer and validate signature
-        "publicKey": "...public key...",
+        alg: 'ed25519',
         // Signature of length prefixed SHA3-256 hash
-        "signature": "...signature...",
+        signature: '...signature...',
+        // Public key is optional and algorithm dependent property
+        publicKey: '...public key...',
     },
 }
 ```
@@ -225,7 +225,7 @@ Stamp params
 |:------|:-----|:------------|
 | alg | String | Signature algorithm |
 | signature | String|Object | Signature itself. Usually hex string but depends on algorithm |
-| signer | String | _Optional_. Signature authentication value publicKey, URI, name, etc |
+| signer | String | _Optional_. Signature authentication value URI, name, etc |
 | ... | * | Multiple algorithm based params, for example `publicKey`. |
 
 ### Hash

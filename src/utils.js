@@ -43,22 +43,12 @@ function fromBase64(str) {
  */
 function getHash(data, schema) {
     if (typeof data === 'object') {
-        return hash(
+        return sha3Hash(
             normjson(data, schema)
         );
     }
 
-    return hash(data);
-}
-
-/**
- * Converts string value to hash.
- *
- * @param  {String} value Value to generate hash.
- * @returns {Buffer} Hash generation result.
- */
-function hash(value) {
-    return sha3Hash(value);
+    return sha3Hash(data);
 }
 
 /**
